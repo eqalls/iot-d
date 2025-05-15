@@ -11,55 +11,46 @@ class HarvestController extends Controller
 {
     public function store(Request $request)
     {
-        if ($request->isJson()) {
-            $data = $request->json()->all();
-        } else {
-            $data = $request->all(); // ✅ Accept both JSON & form data
-        }
-
-        $request->replace($data); // ✅ Ensure data is accessible
+        // Support both JSON and form-data
+        $data = $request->isJson() ? $request->json()->all() : $request->all();
+        $request->replace($data);
 
         $request->validate([
-            'orchard' => 'required|string|max:100',
-            'durian_type' => 'required|string|max:50',
+            'farmer_id' => 'nullable|integer',
+            'orchard_id' => 'nullable|integer',
+            'durian_id' => 'nullable|integer',
+            'harvest_date' => 'nullable|date',
             'total_harvested' => 'required|integer|min:1',
             'status' => 'required|string|max:50',
+            'grade' => 'nullable|string',
+            'condition' => 'nullable|string',
+            'storage_location' => 'nullable|integer',
         ]);
 
         try {
-            // Convert orchard name ('A', 'B', etc.) into an integer ID
-            $orchardId = $this->getOrchardId($request->orchard);
+            DB::beginTransaction();
 
-            // Insert into `harvestDurianLog`
             $harvestLog = HarvestLog::create([
-                'orchard' => $request->orchard,
-                'durian_type' => $request->durian_type,
-                'harvest_date' => now()->toDateString(),
+                'farmer_id' => $request->farmer_id,
+                'orchard_id' => $request->orchard_id,
+                'durian_id' => $request->durian_id,
+                'harvest_date' => $request->harvest_date ?? now(),
                 'total_harvested' => $request->total_harvested,
                 'status' => $request->status,
+                'grade' => $request->grade,
+                'condition' => $request->condition,
+                'storage_location' => $request->storage_location,
             ]);
 
-            // Ensure the orchard_id is correct before updating durians
-            if ($orchardId === null) {
-                throw new \Exception('Invalid orchard ID');
+            // If durian_id is valid, increment its total
+            if ($request->durian_id) {
+                $durian = Durian::lockForUpdate()->find($request->durian_id);
+                if ($durian) {
+                    $durian->increment('total', $request->total_harvested);
+                }
             }
 
-            // Find existing durian record
-            $durian = Durian::lockForUpdate()->where('name', $request->durian_type)->where('orchard_id', $orchardId)->first();
-
-            if ($durian) {
-                // Update existing total
-                $durian->increment('total', $request->total_harvested);
-            } else {
-                // Insert a new durian entry
-                Durian::create([
-                    'name' => $request->durian_type,
-                    'total' => $request->total_harvested,
-                    'orchard_id' => $orchardId,
-                ]);
-            }
-
-            DB::commit(); // Commit changes
+            DB::commit();
 
             return response()->json([
                 'status' => 'success',
@@ -67,27 +58,28 @@ class HarvestController extends Controller
                 'data' => $harvestLog,
             ]);
         } catch (\Exception $e) {
-            DB::rollBack(); // Rollback if error
+            DB::rollBack();
 
-            return response()->json(
-                [
-                    'status' => 'error',
-                    'message' => 'Database error: ' . $e->getMessage(),
-                ],
-                500,
-            );
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Database error: ' . $e->getMessage(),
+            ], 500);
         }
     }
 
+    // You can delete this method if not used in frontend
     public function save(Request $request)
     {
         HarvestLog::create([
-            'harvest_id' => $request->harvest_id,
             'harvest_date' => $request->harvest_date,
-            'location' => $request->location,
-            'durian_type' => $request->durian_type,
-            'quantity' => $request->quantity,
-            'storage_location' => $request->storage_location,
+            'orchard_id' => $request->orchard_id,
+            'durian_id' => $request->durian_id,
+            'total_harvested' => $request->total_harvested,
+            'status' => 'pending',
+            'grade' => null,
+            'condition' => null,
+            'storage_location' => null,
+            'farmer_id' => $request->farmer_id,
         ]);
 
         return redirect()->back()->with('success', 'Harvest recorded successfully!');
@@ -101,6 +93,6 @@ class HarvestController extends Controller
             'C' => 3,
         ];
 
-        return $orchardMapping[$orchardName] ?? null; // Return null if not found
+        return $orchardMapping[$orchardName] ?? null;
     }
 }

@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\Farmer;
 use App\Models\Orchard;
 use App\Models\Durian;
+use App\Models\Storage;
 
 class HarvestLog extends Model
 {
@@ -13,23 +14,18 @@ class HarvestLog extends Model
 
     protected $casts = [
         'harvest_date' => 'date:Y-m-d',
-        // Removed array casts for grade, condition, and storage_location
     ];
 
     protected $fillable = [
         'farmer_id',
         'orchard_id',
         'durian_id',
-        'durian_type',
         'harvest_date',
         'total_harvested',
         'status',
-        'estimated_weight',
         'grade',
         'condition',
-        'storage_location',
-        'remarks',
-        'harvester_signature'
+        'storage_location'
     ];
 
     // Relationships
@@ -42,10 +38,10 @@ class HarvestLog extends Model
     {
         return $this->belongsTo(Farmer::class);
     }
-    
+
     public function durian()
     {
-        return $this->belongsTo(Durian::class, 'durian_id');
+        return $this->belongsTo(Durian::class);
     }
 
     public function storage()
@@ -55,10 +51,8 @@ class HarvestLog extends Model
 
     public function scopeForFarmer($query, $userId)
     {
-        return $query->whereHas('farmer', function($q) use ($userId) {
+        return $query->whereHas('farmer', function ($q) use ($userId) {
             $q->where('user_id', $userId);
         })->with(['orchard', 'durian']);
     }
-
-    // Removed JSON accessors for grade, condition, and storage_location
 }

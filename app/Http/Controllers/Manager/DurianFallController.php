@@ -22,7 +22,7 @@ class DurianFallController extends Controller
             })
             ->map(function($group) {
                 return [
-                    'date' => $group->first()->timestamp->format('Y-m-d'),
+                    'date' => $group->first()->created_at->format('Y-m-d'),
                     'count' => $group->sum('vibration_count')
                 ];
             })

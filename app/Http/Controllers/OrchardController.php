@@ -112,8 +112,9 @@ class OrchardController extends Controller
     {
         $orchard = Orchard::with(['durian', 'device'])->findOrFail($id);
         
-        // Get vibration logs for this orchard
+        // Get vibration logs for this orchard with device relationship
         $vibrationLogs = VibrationLog::where('device_id', $orchard->device_id)
+            ->with('device')  // Eager load the device relationship
             ->orderBy('timestamp', 'desc')
             ->take(20)
             ->get();

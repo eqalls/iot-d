@@ -14,10 +14,12 @@ class VibrationLog extends Model
 
     public $timestamps = false;
 
-    protected $fillable = ['device_id', 'vibration_count', 'log_type', 'timestamp'];
+    // Update fillable to include orchard_id and match your database columns
+    // Remove timestamp if that column doesn't exist in your database
+    protected $fillable = ['device_id', 'vibration_count', 'log_type', 'orchard_id', 'created_at'];
 
     protected $casts = [
-        'timestamp' => 'datetime', 
+        'created_at' => 'datetime', 
     ];
 
     public function orchard()
@@ -28,8 +30,7 @@ class VibrationLog extends Model
     
     public function device()
     {
-        // Fix the device relationship to match on device_id
-        return $this->belongsTo(Device::class, 'device_id', 'device_id');
+        return $this->belongsTo(Device::class, 'device_id', 'id');
     }
     
     // Add an accessor to get farm name through relationships

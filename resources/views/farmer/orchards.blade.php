@@ -69,7 +69,7 @@
                                         <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">Other</span>
                                     @endif
                                 </td>
-                                <td class="py-2 px-4 border-b border-gray-200">{{ $log->timestamp->format('M d, Y H:i:s') }}</td>
+                                <td class="py-2 px-4 border-b border-gray-200">{{ $log->created_at->format('M d, Y H:i:s') }}</td>
                             </tr>
                         @empty
                             <tr>

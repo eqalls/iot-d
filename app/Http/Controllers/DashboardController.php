@@ -20,7 +20,7 @@ class DashboardController extends Controller
 
     public function checkAnimalDetection()
     {
-        $latestLog = VibrationLog::where('log_type', 2)->latest('timestamp')->first();
+        $latestLog = VibrationLog::where('log_type', 2)->latest('created_at')->first();
     
         return response()->json([
             'alert' => $latestLog ? true : false,
@@ -39,7 +39,7 @@ class DashboardController extends Controller
 
         // Retrieve Vibration Logs with orchard information (Latest 4 logs)
         $logs = VibrationLog::with('orchard')
-            ->orderBy('timestamp', 'desc')
+            ->orderBy('created_at', 'desc')
             ->take(4)
             ->get();
         

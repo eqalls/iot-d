@@ -101,7 +101,7 @@
                                             </span>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                            {{ $log->timestamp->format('Y-m-d H:i:s') }}
+                                            {{ $log->created_at->format('Y-m-d H:i:s') }}
                                         </td>
                                     </tr>
                                 @empty

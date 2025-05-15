@@ -64,9 +64,9 @@
                                             <p class="text-sm">
                                                 {{ $log->orchard ? $log->orchard->orchardName : 'Unknown Orchard' }} - 
                                                 {{ $log->log_type == 1 ? 'Fall detected' : 'Animal Detected' }} - 
-                                                {{ $log->timestamp->format('g:i A') }}
+                                                {{ $log->created_at->format('g:i A') }}
                                             </p>
-                                            <p class="timestamp text-xs text-gray-500">{{ $log->timestamp->diffForHumans() }}</p>
+                                            <p class="timestamp text-xs text-gray-500">{{ $log->created_at->diffForHumans() }}</p>
                                         </div>
                                     </li>
                                 @endforeach
